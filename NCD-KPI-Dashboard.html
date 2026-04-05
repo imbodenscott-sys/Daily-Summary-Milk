@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCD Daily KPI Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-border: #2a2d3a;
+    --text: #e4e6ef;
+    --text-muted: #8b8fa3;
+    --accent: #3b82f6;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --orange: #f97316;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--card-border);
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo-mark {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 18px; color: #fff;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .subtitle { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  .date-badge {
+    background: var(--card); border: 1px solid var(--card-border);
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 14px; font-weight: 600;
+  }
+  .goal-pills { display: flex; gap: 8px; }
+  .pill {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: rgba(59,130,246,0.12); color: var(--accent); border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  /* ── Top KPI Row ── */
+  .kpi-hero {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) 1px repeat(3, 1fr);
+    gap: 0;
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--card-border);
+    padding: 0;
+    margin-bottom: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .kpi-hero-divider {
+    background: var(--card-border);
+    width: 1px;
+    align-self: stretch;
+  }
+  .kpi-hero-item {
+    padding: 18px 20px;
+    text-align: center;
+    position: relative;
+  }
+  .kpi-hero-item:not(:last-child):not(.kpi-hero-divider) {
+    border-right: 1px solid var(--card-border);
+  }
+  .kpi-hero-item .label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .kpi-hero-item .value {
+    font-size: 38px; font-weight: 800; letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .kpi-hero-item .sub {
+    font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 500;
+  }
+  .color-al { color: var(--accent); }
+  .color-fo { color: var(--green); }
+  .color-lo { color: var(--cyan); }
+  .color-si { color: var(--purple); }
+  .color-total { color: var(--amber); }
+
+  /* ── Cards Grid ── */
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .feed-eff-badge {
+    font-size: 22px; font-weight: 800; padding: 4px 12px;
+    border-radius: 8px; letter-spacing: -0.5px;
+  }
+
+  /* ── Tables ── */
+  .data-table {
+    width: 100%; border-collapse: collapse; font-size: 14px;
+  }
+  .data-table th {
+    text-align: right; font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--text-muted); padding: 8px 10px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .data-table th:first-child { text-align: left; }
+  .data-table td {
+    text-align: right; padding: 7px 10px; font-variant-numeric: tabular-nums;
+    font-weight: 500; color: var(--text);
+  }
+  .data-table td:first-child {
+    text-align: left; font-weight: 600; color: var(--text-muted); font-size: 13px;
+  }
+  .data-table tr:last-child td {
+    border-top: 2px solid var(--card-border);
+    font-weight: 700;
+  }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+
+  /* ── Gauge Row ── */
+  .gauge-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .gauge-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+  }
+  .gauge-card .metric-label {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px;
+    font-weight: 600; color: var(--text-muted); margin-bottom: 10px;
+  }
+  .gauge-card .metric-row {
+    display: flex; justify-content: center; gap: 24px; margin-top: 8px;
+  }
+  .gauge-card .metric-item .big {
+    font-size: 34px; font-weight: 800; letter-spacing: -1px;
+  }
+  .gauge-card .metric-item .small-label {
+    font-size: 10px; color: var(--text-muted); font-weight: 500;
+  }
+  .fc-status {
+    display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px; margin-top: 4px;
+  }
+  .fc-good { background: rgba(34,197,94,0.15); color: var(--green); }
+  .fc-warn { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .fc-bad  { background: rgba(239,68,68,0.15); color: var(--red); }
+  .fc-cell-good { color: var(--green) !important; }
+  .fc-cell-warn { color: var(--amber) !important; }
+  .fc-cell-bad  { color: var(--red) !important; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; padding: 12px;
+    font-size: 11px; color: var(--text-muted);
+    border-top: 1px solid var(--card-border);
+  }
+
+  /* ── Sparkline bars ── */
+  .spark-row { display: flex; align-items: flex-end; gap: 4px; height: 50px; margin-top: 10px; }
+  .spark-bar {
+    flex: 1; border-radius: 3px 3px 0 0; min-width: 6px;
+    transition: opacity 0.2s;
+  }
+  .spark-bar:hover { opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">NC</div>
+    <div>
+      <h1>Daily Summary KPI Board</h1>
+      <div class="subtitle">Natural Choice Dairy &mdash; Production Overview</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="goal-pills">
+      <span class="pill">Goal Conv: 1.68</span>
+      <span class="pill">Goal EE: 115</span>
+      <span class="pill" style="background:rgba(34,197,94,0.12);color:var(--green);border-color:rgba(34,197,94,0.2);">&ge; 1.68 Good</span>
+      <span class="pill" style="background:rgba(239,68,68,0.12);color:var(--red);border-color:rgba(239,68,68,0.2);">&lt; 1.68 Bad</span>
+    </div>
+    <div class="date-badge">April 4, 2026</div>
+  </div>
+</div>
+
+<!-- ═══════ HERO KPIs ═══════ -->
+<div class="kpi-hero">
+  <div class="kpi-hero-item">
+    <div class="label">Alger &mdash; Lbs/Cow</div>
+    <div class="value color-al">88</div>
+    <div class="sub">MCM: 103 &bull; 5,348 cows</div>
+  </div>
+  <div class="kpi-hero-item">
+    <div class="label">Forest &mdash; Lbs/Cow</div>
+    <div class="value color-fo">91</div>
+    <div class="sub">MCM: 113 &bull; 400 cows</div>
+  </div>
+  <div class="kpi-hero-item">
+    <div class="label">London &mdash; Lbs/Cow</div>
+    <div class="value color-lo">95</div>
+    <div class="sub">MCM: 104 &bull; 2,146 cows</div>
+  </div>
+  <div class="kpi-hero-item">
+    <div class="label">Sidney &mdash; Lbs/Cow</div>
+    <div class="value color-si">90</div>
+    <div class="sub">MCM: 102 &bull; 2,094 cows</div>
+  </div>
+  <div class="kpi-hero-divider"></div>
+  <div class="kpi-hero-item">
+    <div class="label">Total / Head</div>
+    <div class="value color-total">90</div>
+  </div>
+  <div class="kpi-hero-item">
+    <div class="label">Total Lbs</div>
+    <div class="value color-total">902,296</div>
+  </div>
+  <div class="kpi-hero-item" style="border-right:none;">
+    <div class="label">Total Cows</div>
+    <div class="value color-total">9,988</div>
+  </div>
+</div>
+
+<!-- ═══════ GAUGE ROW: MCM + Feed Eff ═══════ -->
+<div class="gauge-row">
+  <div class="gauge-card">
+    <div class="metric-label">Alger</div>
+    <div class="metric-row">
+      <div class="metric-item">
+        <div class="big color-al">103</div>
+        <div class="small-label">MCM/Cow</div>
+      </div>
+      <div class="metric-item">
+        <div class="big" style="color:var(--green)">1.73</div>
+        <div class="small-label">Feed Conv</div>
+        <div class="fc-status fc-good">+0.05 vs goal</div>
+      </div>
+    </div>
+    <div class="spark-row" id="spark-alger"></div>
+  </div>
+  <div class="gauge-card">
+    <div class="metric-label">Forest</div>
+    <div class="metric-row">
+      <div class="metric-item">
+        <div class="big color-fo">113</div>
+        <div class="small-label">MCM/Cow</div>
+      </div>
+      <div class="metric-item">
+        <div class="big" style="color:var(--green)">2.18</div>
+        <div class="small-label">Feed Conv</div>
+        <div class="fc-status fc-good">+0.50 vs goal</div>
+      </div>
+    </div>
+    <div class="spark-row" id="spark-forest"></div>
+  </div>
+  <div class="gauge-card">
+    <div class="metric-label">London</div>
+    <div class="metric-row">
+      <div class="metric-item">
+        <div class="big color-lo">104</div>
+        <div class="small-label">MCM/Cow</div>
+      </div>
+      <div class="metric-item">
+        <div class="big" style="color:var(--red)">1.62</div>
+        <div class="small-label">Feed Conv</div>
+        <div class="fc-status fc-bad">-0.06 vs goal</div>
+      </div>
+    </div>
+    <div class="spark-row" id="spark-london"></div>
+  </div>
+  <div class="gauge-card">
+    <div class="metric-label">Sidney</div>
+    <div class="metric-row">
+      <div class="metric-item">
+        <div class="big color-si">102</div>
+        <div class="small-label">MCM/Cow</div>
+      </div>
+      <div class="metric-item">
+        <div class="big" style="color:var(--green)">1.74</div>
+        <div class="small-label">Feed Conv</div>
+        <div class="fc-status fc-good">+0.06 vs goal</div>
+      </div>
+    </div>
+    <div class="spark-row" id="spark-sidney"></div>
+  </div>
+</div>
+
+<!-- ═══════ PER-LOCATION DETAIL TABLES ═══════ -->
+<div class="grid-4">
+  <!-- ALGER -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="dot" style="background:var(--accent)"></span> Alger</div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Head</th><th>Lbs</th><th>#/Hd</th><th>FC</th><th>DMI</th></tr></thead>
+      <tbody>
+        <tr><td>Mar 29</td><td>5,299</td><td>476,496</td><td>89.9</td><td>1.73</td><td>59.1</td></tr>
+        <tr><td>Mar 30</td><td>5,304</td><td>465,609</td><td>87.8</td><td>1.70</td><td>58.7</td></tr>
+        <tr><td>Mar 31</td><td>5,303</td><td>479,569</td><td>90.4</td><td>1.76</td><td>58.5</td></tr>
+        <tr><td>Apr 1</td><td>5,340</td><td>463,264</td><td>86.8</td><td>&mdash;</td><td>59.1</td></tr>
+        <tr><td>Apr 2</td><td>5,360</td><td>477,894</td><td>89.2</td><td>&mdash;</td><td>59.4</td></tr>
+        <tr><td>Apr 3</td><td>5,347</td><td>474,851</td><td>88.8</td><td>&mdash;</td><td>59.2</td></tr>
+        <tr><td>Apr 4</td><td>5,348</td><td>473,195</td><td>88.5</td><td>&mdash;</td><td>59.4</td></tr>
+        <tr><td>7-Day Avg</td><td>5,329</td><td>472,983</td><td>88.8</td><td>1.73</td><td>59.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOREST -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span> Forest</div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Head</th><th>Lbs</th><th>#/Hd</th><th>FC</th><th>DMI</th></tr></thead>
+      <tbody>
+        <tr><td>Mar 29</td><td>454</td><td>39,768</td><td>87.6</td><td>2.15</td><td>49.7</td></tr>
+        <tr><td>Mar 30</td><td>510</td><td>45,514</td><td>89.2</td><td>2.20</td><td>49.6</td></tr>
+        <tr><td>Mar 31</td><td>514</td><td>49,391</td><td>96.1</td><td>&mdash;</td><td>49.4</td></tr>
+        <tr><td>Apr 1</td><td>514</td><td>39,180</td><td>76.2</td><td>&mdash;</td><td>50.7</td></tr>
+        <tr><td>Apr 2</td><td>412</td><td>34,009</td><td>82.5</td><td>&mdash;</td><td>51.1</td></tr>
+        <tr><td>Apr 3</td><td>380</td><td>36,415</td><td>95.8</td><td>&mdash;</td><td>&mdash;</td></tr>
+        <tr><td>Apr 4</td><td>400</td><td>36,538</td><td>91.3</td><td>&mdash;</td><td>&mdash;</td></tr>
+        <tr><td>7-Day Avg</td><td>455</td><td>40,116</td><td>88.4</td><td>2.18</td><td>50.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LONDON -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="dot" style="background:var(--cyan)"></span> London</div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Head</th><th>Lbs</th><th>#/Hd</th><th>FC</th><th>DMI</th></tr></thead>
+      <tbody>
+        <tr><td>Mar 29</td><td>2,063</td><td>192,513</td><td>93.3</td><td>1.62</td><td>64.2</td></tr>
+        <tr><td>Mar 30</td><td>2,066</td><td>192,920</td><td>93.4</td><td>1.63</td><td>63.7</td></tr>
+        <tr><td>Mar 31</td><td>2,066</td><td>194,238</td><td>94.0</td><td>1.64</td><td>63.2</td></tr>
+        <tr><td>Apr 1</td><td>2,051</td><td>190,125</td><td>92.7</td><td>1.58</td><td>64.2</td></tr>
+        <tr><td>Apr 2</td><td>2,051</td><td>195,173</td><td>95.2</td><td>&mdash;</td><td>63.5</td></tr>
+        <tr><td>Apr 3</td><td>2,141</td><td>201,153</td><td>94.0</td><td>&mdash;</td><td>63.3</td></tr>
+        <tr><td>Apr 4</td><td>2,146</td><td>204,647</td><td>95.4</td><td>&mdash;</td><td>63.7</td></tr>
+        <tr><td>7-Day Avg</td><td>2,083</td><td>195,824</td><td>94.0</td><td>1.62</td><td>63.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SIDNEY -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="dot" style="background:var(--purple)"></span> Sidney</div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Head</th><th>Lbs</th><th>#/Hd</th><th>FC</th><th>DMI</th></tr></thead>
+      <tbody>
+        <tr><td>Mar 29</td><td>2,100</td><td>185,178</td><td>88.2</td><td>1.73</td><td>58.1</td></tr>
+        <tr><td>Mar 30</td><td>2,097</td><td>186,964</td><td>89.2</td><td>1.74</td><td>57.7</td></tr>
+        <tr><td>Mar 31</td><td>2,088</td><td>186,298</td><td>89.2</td><td>&mdash;</td><td>57.3</td></tr>
+        <tr><td>Apr 1</td><td>2,105</td><td>184,312</td><td>87.6</td><td>&mdash;</td><td>54.7</td></tr>
+        <tr><td>Apr 2</td><td>2,094</td><td>186,550</td><td>89.1</td><td>&mdash;</td><td>53.7</td></tr>
+        <tr><td>Apr 3</td><td>2,089</td><td>194,817</td><td>93.3</td><td>&mdash;</td><td>53.9</td></tr>
+        <tr><td>Apr 4</td><td>2,094</td><td>187,916</td><td>89.7</td><td>&mdash;</td><td>54.5</td></tr>
+        <tr><td>7-Day Avg</td><td>2,095</td><td>187,434</td><td>89.5</td><td>1.74</td><td>55.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════ FOOTER ═══════ -->
+<div class="footer">
+  Natural Choice Dairy &mdash; Daily KPI Dashboard &bull; Confidential &amp; Internal Use Only
+</div>
+
+<script>
+  // ── Sparkline Bars ──
+  function renderSpark(id, values, color) {
+    const el = document.getElementById(id);
+    const max = Math.max(...values);
+    values.forEach(v => {
+      const bar = document.createElement('div');
+      bar.className = 'spark-bar';
+      bar.style.height = ((v / max) * 100) + '%';
+      bar.style.background = color;
+      bar.style.opacity = 0.7;
+      el.appendChild(bar);
+    });
+  }
+  renderSpark('spark-alger',  [89.9,87.8,90.4,86.8,89.2,88.8,88.5], 'var(--accent)');
+  renderSpark('spark-forest', [87.6,89.2,96.1,76.2,82.5,95.8,91.3], 'var(--green)');
+  renderSpark('spark-london', [93.3,93.4,94.0,92.7,95.2,94.0,95.4], 'var(--cyan)');
+  renderSpark('spark-sidney', [88.2,89.2,89.2,87.6,89.1,93.3,89.7], 'var(--purple)');
+
+  // ── Color-code FC column in detail tables ──
+  // Goal Conv = 1.68 | ≤1.68 = green | 1.69–1.80 = amber | >1.80 = red
+  document.querySelectorAll('.data-table').forEach(table => {
+    const headers = table.querySelectorAll('th');
+    let fcIdx = -1;
+    headers.forEach((th, i) => { if (th.textContent.trim() === 'FC') fcIdx = i; });
+    if (fcIdx < 0) return;
+    table.querySelectorAll('tbody tr').forEach(row => {
+      const cell = row.cells[fcIdx];
+      if (!cell) return;
+      const val = parseFloat(cell.textContent);
+      if (isNaN(val)) return;
+      if (val >= 1.68) cell.classList.add('fc-cell-good');
+      else cell.classList.add('fc-cell-bad');
+    });
+  });
+
+</script>
+</body>
+</html>
